@@ -3,8 +3,7 @@ const path = require('path');
 const aws = require("aws-sdk");
 const multerS3 = require("multer-s3");
 
-
-module.exports = {
+const storageTypes = {
   s3: multerS3({
     s3: new aws.S3(),
     bucket: 'aircnc-storage',
@@ -17,4 +16,26 @@ module.exports = {
       cb(null, `${name}-${Date.now()}${ext}`);
     }
   })
+}
+
+module.exports = {
+  dest: path.resolve(__dirname, '..', 'uploads'),
+  storage: storageTypes['s3'],
+  limits: {
+    fileSize: 2 * 1024 * 1024
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = [
+      "image/jpeg",
+      "image/pjpeg",
+      "image/png",
+      "image/gif"
+    ];
+
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Invalid file type."));
+    }
+  }
 };
