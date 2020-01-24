@@ -4,6 +4,15 @@ const aws = require("aws-sdk");
 const multerS3 = require("multer-s3");
 
 const storageTypes = {
+  local: multer.diskStorage({
+    destination: path.resolve(__dirname, '..', '..', 'uploads'),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname);
+      const name = path.basename(file.originalname, ext);
+
+      cb(null, `${name}-${Date.now()}${ext}`);
+    },
+  }),
   s3: multerS3({
     s3: new aws.S3(),
     bucket: process.env.BUCKET_NAME,
@@ -18,9 +27,10 @@ const storageTypes = {
   })
 }
 
+
 module.exports = {
-  dest: path.resolve(__dirname, '..', 'uploads'),
-  storage: storageTypes[process.env.STORAGE_TYPE],
+  dest: path.resolve(__dirname, "..", "..", "tmp", "uploads"),
+  storage: storageTypes['s3'],
   limits: {
     fileSize: 2 * 1024 * 1024
   },
@@ -37,5 +47,5 @@ module.exports = {
     } else {
       cb(new Error("Invalid file type."));
     }
-  }
+  } 
 };
